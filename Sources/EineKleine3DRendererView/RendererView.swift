@@ -8,12 +8,12 @@
 import SwiftUI
 import EineKleine3DRenderer
 
-struct RendererView: View {
+public struct RendererView: View {
 
 	private let renderer: Renderer
 	private let camera: Renderer.Camera
 
-	init(
+	public init(
 		renderer: Renderer,
 		camera: Renderer.Camera
 	) throws {
@@ -21,7 +21,7 @@ struct RendererView: View {
 		self.camera = camera
 	}
 
-	var body: some View {
+	public var body: some View {
 		Canvas { context, size in
 
 			self.renderer.render(
@@ -39,27 +39,5 @@ struct RendererView: View {
 			}
 
 		}
-	}
-}
-
-extension [TimeInterval] {
-	var fps: Double {
-		return Double(self.count)
-	}
-}
-
-extension Vertex2d {
-	var cgPoint: CGPoint {
-		return CGPoint(
-			x: CGFloat(self.x),
-			y: CGFloat(self.y))
-	}
-}
-
-extension Vertex3d {
-	var cgPoint: CGPoint {
-		return CGPoint(
-			x: CGFloat(self.x),
-			y: CGFloat(self.y))
 	}
 }

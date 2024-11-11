@@ -75,10 +75,10 @@ extension Renderer.Camera {
 
 }
 
-extension Edge2d {
-	private var cgPoint: CGPoint {
+extension Vertex2d {
+	var cgPoint: CGPoint {
 		return CGPoint(
-			x: CGFloat(self.p.0.x),
-			y: CGFloat(self.p.0.y))
+			x: CGFloat(self.x),
+			y: CGFloat(self.y))
 	}
 }
