@@ -16,7 +16,7 @@ public struct RendererView: View {
 	public init(
 		renderer: Renderer,
 		camera: Renderer.Camera
-	) throws {
+	) {
 		self.renderer = renderer
 		self.camera = camera
 	}
