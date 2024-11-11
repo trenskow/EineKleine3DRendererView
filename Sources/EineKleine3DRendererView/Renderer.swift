@@ -21,6 +21,8 @@ public class Renderer {
 
 	private var renderer = EineKleine3DRenderer.Renderer()
 
+	public init() {}
+
 	public func load(objectFile: String) throws {
 		guard renderer.loadModel(std.string(objectFile)) else {
 			throw RendererError.modelLoadError
@@ -45,6 +47,16 @@ public class Renderer {
 	}
 
 }
+
+extension Renderer {
+	public convenience init(
+		objectFile: String
+	) throws {
+		self.init()
+		try self.load(objectFile: objectFile)
+	}
+}
+
 
 extension Renderer.Camera {
 
