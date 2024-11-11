@@ -1,6 +1,6 @@
 //
-//  EineKleine3DRendererView.swift.swift
-//  EineKleine3DRendererView.swift
+//  RendererView.swift
+//  RendererView
 //
 //  Created by Kristian Trenskow on 09/11/2024.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 import EineKleine3DRenderer
 
-struct ContentView: View {
+struct RendererView: View {
 
 	private let renderer: Renderer
 	private let camera: Renderer.Camera
