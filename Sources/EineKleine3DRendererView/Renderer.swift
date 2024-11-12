@@ -17,20 +17,30 @@ public struct Renderer {
 			public var color: SwiftUI.Color
 		}
 
-		public struct Line {
+		public struct Stroke {
 			public var start: CGPoint
 			public var end: CGPoint
 			public var color: SwiftUI.Color
 		}
 
 		public var fills: [Fill]
-		public var lines: [Line]
+		public var strokes: [Stroke]
 
 	}
 
 	public enum Camera {
 		case pointsAtTarget(position: Vertex3d, target: Vertex3d)
 		case pointsInDirection(position: Vertex3d, direction: Vertex3d)
+	}
+
+	public enum FaceRenderOptions {
+		case solid(EineKleine3DRenderer.Color)
+		case shaded(EineKleine3DRenderer.Color)
+	}
+
+	public enum EdgeRenderOptions {
+		case visible(EineKleine3DRenderer.Color)
+		case wireframe(EineKleine3DRenderer.Color)
 	}
 
 	private let renderer: EineKleine3DRenderer.Renderer
@@ -56,8 +66,8 @@ public struct Renderer {
 	public func render(
 		camera: Camera,
 		size: CGSize,
-		faceColor: EineKleine3DRenderer.Color,
-		edgeColor: EineKleine3DRenderer.Color? = nil
+		faceRenderOptions: FaceRenderOptions? = nil,
+		edgeRenderOptions: EdgeRenderOptions? = nil
 	) -> Result {
 
 		var result = RenderResult()
@@ -66,9 +76,11 @@ public struct Renderer {
 			&result,
 			Float(size.width),
 			Float(size.height),
-			faceColor,
-			edgeColor ?? Color(0, 0, 0, 0),
-			camera.camera)
+			faceRenderOptions.color,
+			edgeRenderOptions.color,
+			camera.camera,
+			faceRenderOptions.options,
+			edgeRenderOptions.options)
 
 		return Result(
 			fills: result.fills.map({ fill in
@@ -79,13 +91,101 @@ public struct Renderer {
 						z: fill.face.p.2.cgPoint),
 					color: fill.color.swiftColor)
 			}),
-			lines: result.lines.map({ line in
-				return Result.Line(
+			strokes: result.strokes.map({ line in
+				return Result.Stroke(
 					start: line.edge.p.0.cgPoint,
 					end: line.edge.p.1.cgPoint,
 					color: line.color.swiftColor)
 			}))
 
+	}
+
+}
+
+extension Renderer.FaceRenderOptions {
+
+	var color: EineKleine3DRenderer.Color {
+		switch self {
+		case .solid(let color):
+			return color
+		case .shaded(let color):
+			return color
+		}
+	}
+
+	var options: EineKleine3DRenderer.Renderer.FaceRenderOptions {
+		switch self {
+		case .solid:
+			return .solid
+		case .shaded:
+			return .shaded
+		}
+	}
+
+}
+
+extension Optional where Wrapped == Renderer.FaceRenderOptions {
+
+	var color: EineKleine3DRenderer.Color {
+		switch self {
+		case .some(let wrapped):
+			return wrapped.color
+		case .none:
+			return Color(0, 0, 0, 0)
+		}
+	}
+
+	var options: EineKleine3DRenderer.Renderer.FaceRenderOptions {
+		switch self {
+		case .some(let wrapped):
+			return wrapped.options
+		case .none:
+			return .none
+		}
+	}
+
+}
+
+extension Renderer.EdgeRenderOptions {
+
+	var color: EineKleine3DRenderer.Color {
+		switch self {
+		case .visible(let color):
+			return color
+		case .wireframe(let color):
+			return color
+		}
+	}
+
+	var options: EineKleine3DRenderer.Renderer.EdgeRenderOptions {
+		switch self {
+		case .visible:
+			return .visible
+		case .wireframe:
+			return .wireframe
+		}
+	}
+
+}
+
+extension Optional where Wrapped == Renderer.EdgeRenderOptions {
+
+	var color: EineKleine3DRenderer.Color {
+		switch self {
+		case .some(let wrapped):
+			return wrapped.color
+		case .none:
+			return Color(0, 0, 0, 0)
+		}
+	}
+
+	var options: EineKleine3DRenderer.Renderer.EdgeRenderOptions {
+		switch self {
+		case .some(let wrapped):
+			return wrapped.options
+		case .none:
+			return .none
+		}
 	}
 
 }

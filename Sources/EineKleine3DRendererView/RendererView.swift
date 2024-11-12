@@ -8,25 +8,25 @@
 import SwiftUI
 import EineKleine3DRenderer
 
-public struct RendererView<FaceColor: RendererColor, EdgeColor: RendererColor>: View {
+public struct RendererView: View {
 
 	@Environment(\.self) var environment
 
 	private let renderer: Renderer
 	private let camera: Renderer.Camera
-	private let faceColor: RendererColor
-	private let edgeColor: RendererColor
+	private let faceRenderOptions: FaceRenderOptions?
+	private let edgeRenderOptions: EdgeRenderOptions?
 
 	public init(
 		renderer: Renderer,
 		camera: Renderer.Camera,
-		faceColor: FaceColor = SwiftUI.Color.secondary,
-		edgeColor: EdgeColor = SwiftUI.Color.clear
+		faceRenderOptions: FaceRenderOptions? = .shaded(color: SwiftUI.Color.secondary),
+		edgeRenderOptions: EdgeRenderOptions? = nil
 	) {
 		self.renderer = renderer
 		self.camera = camera
-		self.faceColor = faceColor
-		self.edgeColor = edgeColor
+		self.faceRenderOptions = faceRenderOptions
+		self.edgeRenderOptions = edgeRenderOptions
 	}
 
 	public var body: some View {
@@ -35,8 +35,8 @@ public struct RendererView<FaceColor: RendererColor, EdgeColor: RendererColor>: 
 			let result = self.renderer.render(
 				camera: self.camera,
 				size: size,
-				faceColor: self.faceColor.rendererColor(in: self.environment),
-				edgeColor: self.edgeColor.rendererColor(in: self.environment))
+				faceRenderOptions: self.faceRenderOptions?.rendererOptions(in: self.environment),
+				edgeRenderOptions: self.edgeRenderOptions?.rendererOptions(in: self.environment))
 
 			result.fills
 				.forEach { fill in
@@ -54,21 +54,47 @@ public struct RendererView<FaceColor: RendererColor, EdgeColor: RendererColor>: 
 
 				}
 
-			result.lines
-				.forEach { line in
+			result.strokes
+				.forEach { stroke in
 
-					var linePath = Path()
+					var strokePath = Path()
 
-					linePath.move(to: line.start)
-					linePath.addLine(to: line.end)
+					strokePath.move(to: stroke.start)
+					strokePath.addLine(to: stroke.end)
 
 					context.stroke(
-						linePath,
-						with: .color(line.color),
+						strokePath,
+						with: .color(stroke.color),
 						lineWidth: 2)
 
 				}
 
+		}
+	}
+}
+
+extension FaceRenderOptions {
+	fileprivate func rendererOptions(
+		in environment: EnvironmentValues
+	) -> Renderer.FaceRenderOptions {
+		switch self {
+		case .solid(let color):
+			return .solid(color.rendererColor(in: environment))
+		case .shaded(let color):
+			return .shaded(color.rendererColor(in: environment))
+		}
+	}
+}
+
+extension EdgeRenderOptions {
+	fileprivate func rendererOptions(
+		in environment: EnvironmentValues
+	) -> Renderer.EdgeRenderOptions {
+		switch self {
+		case .visible(let color):
+			return .visible(color.rendererColor(in: environment))
+		case .wireframe(let color):
+			return .wireframe(color.rendererColor(in: environment))
 		}
 	}
 }
