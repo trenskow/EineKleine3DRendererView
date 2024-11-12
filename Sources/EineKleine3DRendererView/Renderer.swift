@@ -6,57 +6,89 @@
 //
 
 import EineKleine3DRenderer
-import QuartzCore
+import SwiftUI
 
-public class Renderer {
+public struct Renderer {
+
+	public struct Result {
+
+		public struct Fill {
+			public var points: (x: CGPoint, y: CGPoint, z: CGPoint)
+			public var color: SwiftUI.Color
+		}
+
+		public struct Line {
+			public var start: CGPoint
+			public var end: CGPoint
+			public var color: SwiftUI.Color
+		}
+
+		public var fills: [Fill]
+		public var lines: [Line]
+
+	}
 
 	public enum Camera {
 		case pointsAtTarget(position: Vertex3d, target: Vertex3d)
 		case pointsInDirection(position: Vertex3d, direction: Vertex3d)
 	}
 
-	public enum RendererError: Error {
-		case modelLoadError
+	private let renderer: EineKleine3DRenderer.Renderer
+
+	public init() {
+		self.renderer = EineKleine3DRenderer.Renderer()
 	}
 
-	private var renderer = EineKleine3DRenderer.Renderer()
+	public init(
+		meshes: [Mesh]
+	) {
 
-	public init() {}
+		var meshesVector = Meshes()
 
-	public func load(objectFile: String) throws {
-		guard renderer.loadModel(std.string(objectFile)) else {
-			throw RendererError.modelLoadError
+		meshes.forEach { mesh in
+			meshesVector.push_back(mesh)
 		}
+
+		self.renderer = EineKleine3DRenderer.Renderer(meshesVector)
+
 	}
 
 	public func render(
 		camera: Camera,
-		size: CGSize
-	) -> [(start: CGPoint, end: CGPoint)] {
+		size: CGSize,
+		faceColor: EineKleine3DRenderer.Color,
+		edgeColor: EineKleine3DRenderer.Color? = nil
+	) -> Result {
 
-		var edges = Edges2d()
+		var result = RenderResult()
 
 		self.renderer.render(
-			&edges,
+			&result,
 			Float(size.width),
 			Float(size.height),
+			faceColor,
+			edgeColor ?? Color(0, 0, 0, 0),
 			camera.camera)
 
-		return edges.map { (start: $0.p.0.cgPoint, end: $0.p.1.cgPoint) }
+		return Result(
+			fills: result.fills.map({ fill in
+				return Result.Fill(
+					points: (
+						x: fill.face.p.0.cgPoint,
+						y: fill.face.p.1.cgPoint,
+						z: fill.face.p.2.cgPoint),
+					color: fill.color.swiftColor)
+			}),
+			lines: result.lines.map({ line in
+				return Result.Line(
+					start: line.edge.p.0.cgPoint,
+					end: line.edge.p.1.cgPoint,
+					color: line.color.swiftColor)
+			}))
 
 	}
 
 }
-
-extension Renderer {
-	public convenience init(
-		objectFile: String
-	) throws {
-		self.init()
-		try self.load(objectFile: objectFile)
-	}
-}
-
 
 extension Renderer.Camera {
 
@@ -80,5 +112,15 @@ extension Vertex2d {
 		return CGPoint(
 			x: CGFloat(self.x),
 			y: CGFloat(self.y))
+	}
+}
+
+extension EineKleine3DRenderer.Color {
+	var swiftColor: SwiftUI.Color {
+		return SwiftUI.Color(
+			red: Double(self.red),
+			green: Double(self.green),
+			blue: Double(self.blue),
+			opacity: Double(self.alpha))
 	}
 }

@@ -11,7 +11,7 @@ import PackageDescription
 
 let package = Package(
 	name: "EineKleine3DRendererView",
-	platforms: [.iOS(.v15)],
+	platforms: [.iOS(.v17)],
 	products: [
 		.library(
 			name: "EineKleine3DRendererView", 
